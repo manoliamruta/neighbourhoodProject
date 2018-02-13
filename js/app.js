@@ -331,7 +331,6 @@ function NeighbourhoodMapModel() {
        one infowindow which will open at the marker that is clicked, and populate based
        on that markers position.*/
     function populateInfoWindow(marker, infowindow) {
-
         /* Check to make sure the infowindow is not already opened on this marker. */
         if (infowindow.marker != marker) {
           	/* Clear the infowindow content to give the streetview time to load. */
@@ -343,34 +342,34 @@ function NeighbourhoodMapModel() {
           	});
           	var streetViewService = new google.maps.StreetViewService();
           	var radius = 50;
+          	var getStreetView = function(){};
           	/* In case the status is OK, which means the pano was found, compute the
           	 position of the streetview image, then calculate the heading, then get a
           	 panorama from that and set the options. */
-          	function getStreetView(data, status) {
-
-	            if (status == google.maps.StreetViewStatus.OK) {
+          	getStreetView = function (data, status) {
+	            if (status === google.maps.StreetViewStatus.OK) {
 	              var nearStreetViewLocation = data.location.latLng;
 	              var heading = google.maps.geometry.spherical.computeHeading(
-	                nearStreetViewLocation, marker.position);                
+	                nearStreetViewLocation, marker.position);         
 	                var view = '<div>' + marker.title + '</div><div id="pano"></div>';
 	                var keyword = marker.title;
 	                var place;
 	                var workingHours = '';
-	                var phone = '';                
-	                var url = '';	                
+	                var phone = '';
+	                var url = '';                
 	                for (var i=0; i < self.locationList().length ; i++) {      
-	      				place = self.locationList()[i].venue.name;         				
-	      				if (place.toLowerCase().indexOf(keyword.toLowerCase()) !== -1) { 	      					
-	       					if( self.locationList()[i].venue.hours !== null)	       					
+	      				place = self.locationList()[i].venue.name;
+	      				if (place.toLowerCase().indexOf(keyword.toLowerCase()) !== -1) {
+	       					if( self.locationList()[i].venue.hours !== null)				
 	       						if( self.locationList()[i].venue.hours.status !== undefined)
-	       							workingHours = self.locationList()[i].venue.hours.status;	       					
+	       							workingHours = self.locationList()[i].venue.hours.status;
 	       					if( self.locationList()[i].venue.contact !== null)
 	       						if( self.locationList()[i].venue.contact.formattedPhone !== undefined)
 	       							phone = self.locationList()[i].venue.contact.formattedPhone;
 	       					if( self.locationList()[i].venue.url !== null || self.locationList()[i].venue.url !== null)
-	       						url = self.locationList()[i].venue.url;       		       					
+	       						url = self.locationList()[i].venue.url;
 	      				}
-	    			}                  
+	    			}
 	    			var info = '<div><p>' + workingHours + '</p>' + '<p>' + phone + '</p>' + '<p>' + url + '</p></div>'; 
 	                infowindow.setContent(view + info);
 	                var panoramaOptions = {
