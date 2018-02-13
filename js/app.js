@@ -1,7 +1,7 @@
 /* Model Melbourne Neighbourhood Map */
 function NeighbourhoodMapModel() {  		
 
-    var map;
+    var map;    
     var markers = [];
     var service;    
     var defaultPlace = "Melbourne";
@@ -248,13 +248,13 @@ function NeighbourhoodMapModel() {
     	};
     	service = new google.maps.places.PlacesService(map);
     	service.textSearch(request, callback);	    
-	};   
+	}   
 	
 	/* Callback function for neighborhood location */
   	function callback(results, status) {
 
     	if (status == google.maps.places.PlacesServiceStatus.OK) {    		
-      		getLocationInfo(results[0])
+      		getLocationInfo(results[0]);
     	}
   	}
 	
@@ -266,18 +266,14 @@ function NeighbourhoodMapModel() {
 	    var lat = defaultLocation.geometry.location.lat();
 	    var lng = defaultLocation.geometry.location.lng();	    
 	    var clientID = 'CXXZLTCGH50UFMJC5OEM3N3PUPFLMMWY0KTYXAPZB15E4ZVK';
-	    var clientSecret = 'XBZV30B3H5ZZWDGF5QED4EWXYWY0UEV2X2ILXF2OWAA3USZD'
+	    var clientSecret = 'XBZV30B3H5ZZWDGF5QED4EWXYWY0UEV2X2ILXF2OWAA3USZD';
 	    var fqVersion = '20180131';
+    	/* Style the markers a bit. This will be our listing marker icon. */
+    	var defaultIcon = makeMarkerIcon('ff4500');
     	
     	preferredLocation = new google.maps.LatLng(lat, lng);    	
     	map.setCenter(preferredLocation);
-    	
-    	/* Style the markers a bit. This will be our listing marker icon. */
-    	var defaultIcon = makeMarkerIcon('ff4500');
-    	/* Create a "highlighted location" marker color for when the user
-    	 mouses over the marker. */
-    	var highlightedIcon = makeMarkerIcon('008000');    	
-	    
+    	    	
     	foursquareQuery = 'https://api.foursquare.com/v2/venues/explore' + '?client_id=' + clientID + '&client_secret=' + clientSecret + '&v=' + fqVersion + '&ll=' + lat + ',' + lng + '&limit=15&venuePhotos=1';
     
     	console.log(foursquareQuery);
@@ -294,24 +290,12 @@ function NeighbourhoodMapModel() {
 	      		icon: defaultIcon
 	    	});       	
 	      	markers.push(marker);        
-	      	// Create an onclick event to open the large infowindow at each marker.
-		    marker.addListener('click', function() {
-		        populateInfoWindow(this, largeInfowindow);
-		    });
-		    // Two event listeners - one for mouseover, one for mouseout,
-		    // to change the colors back and forth.
-		    marker.addListener('mouseover', function() {
-		        this.setIcon(highlightedIcon);
-		    });
-		    marker.addListener('mouseout', function() {
-		        this.setIcon(defaultIcon);
-
-		    });
+	      	makeMarker(marker);	    
 	      }
 	      /* Change the map zoom level by suggested bounds*/
 	      var bounds = data.response.suggestedBounds;
-	      if (bounds != undefined) {
-	        mapBounds = new google.maps.LatLngBounds(
+	      if (bounds !== undefined) {
+	        var mapBounds = new google.maps.LatLngBounds(
 	          new google.maps.LatLng(bounds.sw.lat, bounds.sw.lng),
 	          new google.maps.LatLng(bounds.ne.lat, bounds.ne.lng));
 	        map.fitBounds(mapBounds);
@@ -319,8 +303,29 @@ function NeighbourhoodMapModel() {
 	    }).error(function (e){    	
 	        $displayElem.text("Sorry !!! Failed to load neighbourhood information");
 	    });     
-  	};
+  	}
 
+  	function makeMarker(marker)
+  	{
+  		/* Style the markers a bit. This will be our listing marker icon. */
+    	var defaultIcon = makeMarkerIcon('ff4500');
+    	/* Create a "highlighted location" marker color for when the user
+    	 mouses over the marker. */
+    	var highlightedIcon = makeMarkerIcon('008000');    	
+	    
+  		// Create an onclick event to open the large infowindow at each marker.
+		marker.addListener('click', function() {
+		    populateInfoWindow(this, largeInfowindow);
+		});
+		// Two event listeners - one for mouseover, one for mouseout,
+		// to change the colors back and forth.
+		marker.addListener('mouseover', function() {
+		    this.setIcon(highlightedIcon);
+		});
+		marker.addListener('mouseout', function() {
+		    this.setIcon(defaultIcon);
+	    });
+  	}
     
   	/** This function populates the infowindow when the marker is clicked. We'll only allow
        one infowindow which will open at the marker that is clicked, and populate based
@@ -355,20 +360,18 @@ function NeighbourhoodMapModel() {
 	                var url = '';	                
 	                for (var i=0; i < self.locationList().length ; i++) {      
 	      				place = self.locationList()[i].venue.name;         				
-	      				if (place.toLowerCase().indexOf(keyword.toLowerCase()) != -1) { 	      					
-	       					if( self.locationList()[i].venue.hours != null)	       					
-	       						if( self.locationList()[i].venue.hours.status != undefined)
+	      				if (place.toLowerCase().indexOf(keyword.toLowerCase()) !== -1) { 	      					
+	       					if( self.locationList()[i].venue.hours !== null)	       					
+	       						if( self.locationList()[i].venue.hours.status !== undefined)
 	       							workingHours = self.locationList()[i].venue.hours.status;	       					
-	       					if( self.locationList()[i].venue.contact != null)
-	       						if( self.locationList()[i].venue.contact.formattedPhone != undefined)
+	       					if( self.locationList()[i].venue.contact !== null)
+	       						if( self.locationList()[i].venue.contact.formattedPhone !== undefined)
 	       							phone = self.locationList()[i].venue.contact.formattedPhone;
-	       					if( self.locationList()[i].venue.url != null || self.locationList()[i].venue.url != null)
+	       					if( self.locationList()[i].venue.url !== null || self.locationList()[i].venue.url !== null)
 	       						url = self.locationList()[i].venue.url;       		       					
 	      				}
 	    			}                  
-	    			var info = '<div><p>' + workingHours + '</p>' 
-	      						+ '<p>' + phone + '</p>' 
-	      						+ '<p>' + url + '</p></div>'; 
+	    			var info = '<div><p>' + workingHours + '</p>' + '<p>' + phone + '</p>' + '<p>' + url + '</p></div>'; 
 	                infowindow.setContent(view + info);
 	                var panoramaOptions = {
 	                  position: nearStreetViewLocation,
@@ -390,7 +393,7 @@ function NeighbourhoodMapModel() {
           	/* Open the infowindow on the correct marker.*/
           	infowindow.open(map, marker);
         }
-    }; 
+    }
 
     /* This function takes in a COLOR, and then creates a new marker
     icon of that color. The icon will be 21 px wide by 34 high, have an origin
@@ -405,7 +408,7 @@ function NeighbourhoodMapModel() {
           new google.maps.Point(10, 34),
           new google.maps.Size(21,34));
         return markerImage;
-    };  
+    }
     
     /* Function to trigger the list item clicked event */
   	self.clicked = function(venue) {
@@ -428,7 +431,7 @@ function NeighbourhoodMapModel() {
 	    var keyword = self.searchterm().toLowerCase();
 	    for (var i=0; i < self.locationList().length; i++) {
       		venue = self.locationList()[i].venue.name;      
-      		if (venue.toLowerCase().indexOf(keyword) != -1) {      	
+      		if (venue.toLowerCase().indexOf(keyword) !== -1) {      	
         		list.push(self.locationList()[i]);        
       		}
     	}
@@ -439,7 +442,7 @@ function NeighbourhoodMapModel() {
   	self.showMarkers = ko.computed(function() {  
   		var keyword = self.searchterm().toLowerCase();
   		for (var i=0; i < markers.length; i++) {  	  
-	      	if (markers[i].title.toLowerCase().indexOf(keyword) != -1)	      	
+	      	if (markers[i].title.toLowerCase().indexOf(keyword) !== -1)	      	
 		      	markers[i].setMap(map);        	      	
 	      	else
 	      	   	markers[i].setMap(null);	      	
