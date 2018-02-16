@@ -15,8 +15,11 @@
         float            : left;
         position         : relative;
         background       : #ffe4b3;
-        height           : 25%;
-        padding          : 1em;
+        height           : 100%;
+        padding-top      : 2.5em;
+        padding-left     : 1em;
+        padding-bottom   : 2.5em;
+        padding-right    : 1em;
         text-align       : left;
       }
   .display-box {
@@ -25,7 +28,7 @@
         background       : #ffe4b3;
         height           : 60%;
         text-align       : left;
-        top              : 25%;
+        top              : 20%;
   }
   .smalldisplay-box {
         float            : left;
@@ -76,6 +79,8 @@
   h3 {
         margin-bottom    : 0em;
         margin-top       : 0em;
+        padding-left     : 0em; 
+        padding-top      : 1em;
      }
 
   ul {
@@ -101,7 +106,13 @@
         background-color : #ffa500;
       }
 
-  
+  .hidden { 
+        visibility       : hidden; 
+      }
+
+  .unhidden { 
+        visibility       : visible; 
+      } 
 /* Responsive styling of fonts */
   h1 {
         font-size        : 1.5em;

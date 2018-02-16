@@ -14,9 +14,9 @@ function NeighbourhoodMapModel() {
     self.bigScreen = ko.observable(true); 
     self.smallScreen = ko.observable(true); 
     self.screenWidth = ko.observable($(window).width());
-
-    initMap();
-      
+    self.displayElem = ko.observable('');    
+    
+    initMap();  
     /* This function Initializes the map with a customized retro style.*/
     function initMap() {   
 
@@ -261,8 +261,7 @@ function NeighbourhoodMapModel() {
 	/* This function is used to get the information
 		about the nearby places using Foursquare API. */		
 	function getLocationInfo(defaultLocation) {
-		
-	  	var $displayElem = $('#display-header');
+			  	
 	    var lat = defaultLocation.geometry.location.lat();
 	    var lng = defaultLocation.geometry.location.lng();	    
 	    var clientID = 'CXXZLTCGH50UFMJC5OEM3N3PUPFLMMWY0KTYXAPZB15E4ZVK';
@@ -279,7 +278,7 @@ function NeighbourhoodMapModel() {
     	console.log(foursquareQuery);
 	    /* AJAX call to the foursquare api to get the nearby places details. */
 	    $.getJSON(foursquareQuery, function(data) {
-	      $displayElem.text("Places nearby");
+	      self.displayElem("Places nearby");
 	      self.locationList(data.response.groups[0].items);
 	      for (var i=0; i < self.locationList().length ; i++) {
 	      	var markerPos = self.locationList()[i].venue;      	      	
@@ -287,10 +286,11 @@ function NeighbourhoodMapModel() {
 	      		map: map,
 	      		position: markerPos.location,
 	      		title: markerPos.name,
-	      		icon: defaultIcon
+	      		icon: defaultIcon,
+	      		animation: google.maps.Animation.DROP
 	    	});       	
+	    	makeMarker(marker);
 	      	markers.push(marker);        
-	      	makeMarker(marker);	    
 	      }
 	      /* Change the map zoom level by suggested bounds*/
 	      var bounds = data.response.suggestedBounds;
@@ -301,43 +301,45 @@ function NeighbourhoodMapModel() {
 	        map.fitBounds(mapBounds);
 	      }
 	    }).error(function (e){    	
-	        $displayElem.text("Sorry !!! Failed to load neighbourhood information");
+	        self.displayElem("Sorry !!! Failed to load neighbourhood information");
 	    });     
   	}
+
+  	function toggleBounce(marker) {  		  		
+        if (marker.getAnimation() !== null) {
+          marker.setAnimation(null);
+        } else {
+          marker.setAnimation(google.maps.Animation.BOUNCE);
+        }        
+      }
 
   	function makeMarker(marker)
   	{
   		/* Style the markers a bit. This will be our listing marker icon. */
     	var defaultIcon = makeMarkerIcon('ff4500');
-    	/* Create a "highlighted location" marker color for when the user
-    	 mouses over the marker. */
-    	var highlightedIcon = makeMarkerIcon('008000');    	
-	    
+    	
   		// Create an onclick event to open the large infowindow at each marker.
 		marker.addListener('click', function() {
+			for (i=0; i < markers.length;i++) {
+				markers[i].setAnimation(null);
+			}
+			toggleBounce(this);
 		    populateInfoWindow(this, largeInfowindow);
-		});
-		// Two event listeners - one for mouseover, one for mouseout,
-		// to change the colors back and forth.
-		marker.addListener('mouseover', function() {
-		    this.setIcon(highlightedIcon);
-		});
-		marker.addListener('mouseout', function() {
-		    this.setIcon(defaultIcon);
-	    });
+		});			
   	}
     
   	/** This function populates the infowindow when the marker is clicked. We'll only allow
        one infowindow which will open at the marker that is clicked, and populate based
        on that markers position.*/
-    function populateInfoWindow(marker, infowindow) {
+    function populateInfoWindow(marker, infowindow) {    	
         /* Check to make sure the infowindow is not already opened on this marker. */
         if (infowindow.marker != marker) {
-          	/* Clear the infowindow content to give the streetview time to load. */
+          	/* Clear the infowindow content to give the streetview time to load. */          	
           	infowindow.setContent('');
-          	infowindow.marker = marker;
+          	infowindow.marker = marker;          	
           	/* Make sure the marker property is cleared if the infowindow is closed. */
           	infowindow.addListener('closeclick', function() {
+          		marker.setAnimation(null);
             	infowindow.marker = null;
           	});
           	var streetViewService = new google.maps.StreetViewService();
@@ -366,8 +368,9 @@ function NeighbourhoodMapModel() {
 	       					if( self.locationList()[i].venue.contact !== null)
 	       						if( self.locationList()[i].venue.contact.formattedPhone !== undefined)
 	       							phone = self.locationList()[i].venue.contact.formattedPhone;
-	       					if( self.locationList()[i].venue.url !== null || self.locationList()[i].venue.url !== null)
-	       						url = self.locationList()[i].venue.url;
+	       					if( self.locationList()[i].venue.url !== null)
+	       						if( self.locationList()[i].venue.url !== undefined)
+	       							url = self.locationList()[i].venue.url;
 	      				}
 	    			}
 	    			var info = '<div><p>' + workingHours + '</p>' + '<p>' + phone + '</p>' + '<p>' + url + '</p></div>'; 
@@ -417,7 +420,8 @@ function NeighbourhoodMapModel() {
       		if (markers[i].title.toLowerCase() === venueName) {  
       			google.maps.event.trigger(markers[i].marker, 'click');
         		map.panTo(markers[i].position);      
-        		populateInfoWindow(markers[i], largeInfowindow);          
+        		populateInfoWindow(markers[i], largeInfowindow);
+        		markers[i].setAnimation(google.maps.Animation.BOUNCE);
       		}
     	}
   	}; 
@@ -480,7 +484,25 @@ function NeighbourhoodMapModel() {
   });
 }
 
-/* Initialize the binding for the Knockout variables*/
-$(function() {  
-  ko.applyBindings(new NeighbourhoodMapModel());
-});
+function unhide(divID) {
+    var item = document.getElementById(divID);
+    if (item) {
+      item.className=(item.className=='hidden')?'unhidden':'hidden';
+    }
+}
+
+var isMapsApiLoaded = false;
+window.mapsCallback = function () {
+	unhide('app');
+  	isMapsApiLoaded = true;
+  	/* Initialize the binding for the Knockout variables*/
+  	$(function() {  
+	  	ko.applyBindings(new NeighbourhoodMapModel());
+  	});
+};
+
+function loadError(){		
+	unhide('error');
+	console.log("error occurred");  	
+}
+
